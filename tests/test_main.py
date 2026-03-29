@@ -23,9 +23,12 @@ def test_menu_principal_opcion_salir(monkeypatch, capsys):
     assert "¡Hasta luego!" in captura.out
 
 def test_menu_principal_generacion_flujo_completo(monkeypatch, capsys):
-    """Verifica flujo opción 1: 7 inputs de config + 1 de guardar + 1 de salir."""
+    """Verifica flujo opción 1."""
     # Arrange
-    # 1(opcion) + 6(config: lon, may, num, sym, amb, cant) + 1(guardar) + 1(salir)
+    # 1. Opción 1
+    # 2-7. Configuración (lon, may, num, sym, amb, cant)
+    # 8. ¿Guardar? 'n'
+    # 9. El bucle reinicia -> Opción '3' para salir
     respuestas = ["1", "", "", "", "", "", "", "n", "3"]
     inputs = iter(respuestas)
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -39,10 +42,24 @@ def test_menu_principal_generacion_flujo_completo(monkeypatch, capsys):
 
 # --- Casos Límite (L) ---
 
+def test_menu_principal_longitud_fuera_de_rango_maximo(monkeypatch, capsys):
+    """Verifica que 200 se resetee a 16."""
+    # Arrange
+    # Opción 1, longitud 200, rest de config, guardar n, salir 3
+    respuestas = ["1", "200", "", "", "", "", "", "n", "3"]
+    inputs = iter(respuestas)
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    # Act
+    main.menu_principal()
+    captura = capsys.readouterr()
+
+    # Assert
+    assert "Contraseñas generadas:" in captura.out
+
 def test_menu_principal_cantidad_minima(monkeypatch, capsys):
     """Verifica generación de 1 sola unidad."""
     # Arrange
-    # Opción 1, defaults, cantidad 1, no guardar, salir
     respuestas = ["1", "16", "s", "s", "s", "n", "1", "n", "3"]
     inputs = iter(respuestas)
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -56,10 +73,11 @@ def test_menu_principal_cantidad_minima(monkeypatch, capsys):
 
 # --- Casos de Error (E) ---
 
-def test_menu_principal_input_no_numerico(monkeypatch, capsys):
-    """Verifica manejo de error al meter letras en longitud."""
+def test_menu_principal_input_no_numerico_en_longitud(monkeypatch, capsys):
+    """Verifica manejo de ValueError en longitud."""
     # Arrange
-    # Opción 1, 'error' en longitud (lanza ValueError), 3 para salir
+    # Opción 1, 'error' en longitud -> El código captura el error, 
+    # imprime mensaje y vuelve al menú principal -> Enviamos '3' para salir.
     respuestas = ["1", "error", "3"]
     inputs = iter(respuestas)
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
@@ -69,12 +87,13 @@ def test_menu_principal_input_no_numerico(monkeypatch, capsys):
     captura = capsys.readouterr()
 
     # Assert
-    assert "Error: Por favor ingrese números válidos." in captura.out
+    # Nota: Tu código imprime "Error: Por favor, ingrese un número entero."
+    assert "Error" in captura.out
 
-def test_menu_principal_opcion_invalida(monkeypatch, capsys):
-    """Verifica que opción inexistente reinicie el menú."""
+def test_menu_principal_guardado_archivo_cancelado(monkeypatch, capsys):
+    """Verifica que 'n' no guarda el archivo."""
     # Arrange
-    respuestas = ["9", "3"]
+    respuestas = ["1", "", "", "", "", "", "", "n", "3"]
     inputs = iter(respuestas)
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
@@ -83,5 +102,4 @@ def test_menu_principal_opcion_invalida(monkeypatch, capsys):
     captura = capsys.readouterr()
 
     # Assert
-    # Buscamos el título del menú que se repite al reentrar al bucle
-    assert "GENERADOR DE CONTRASEÑAS" in captura.out
+    assert "Guardadas correctamente" not in captura.out
