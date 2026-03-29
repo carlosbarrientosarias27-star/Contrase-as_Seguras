@@ -1,7 +1,14 @@
 import pytest
 import os
-import builtin
-from src.data.storage import guardar_en_archivo
+import builtins
+# Intentamos una importación relativa al sistema de archivos si la absoluta falla
+try:
+    from src.data.storage import guardar_en_archivo
+except ImportError:
+    # Fallback por si ejecutas desde dentro de src o similar
+    import sys
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from src.data.storage import guardar_en_archivo
 
 # --- Casos Normales (N) ---
 
@@ -87,6 +94,7 @@ def test_guardar_en_archivo_modo_append(monkeypatch):
         def __enter__(self): return self
         def __exit__(self, *args): pass
         def write(self, contenido): pass
+        def close(self): pass
 
     def mock_open(name, mode):
         nonlocal modo_apertura
