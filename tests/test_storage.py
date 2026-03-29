@@ -89,10 +89,16 @@ def test_guardar_en_archivo_modo_append(monkeypatch):
     datos = [("test", "Fuerte")]
     modo_apertura = None
 
+    # Creamos un Mock que no llame a 'open' real para evitar recursión
+    class MockFile:
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def write(self, contenido): pass
+
     def mock_open(name, mode):
         nonlocal modo_apertura
         modo_apertura = mode
-        return open(os.devnull, "w") # Usar devnull para no crear archivos
+        return MockFile() # Retornamos el objeto simulado
 
     monkeypatch.setattr("builtins.open", mock_open)
 
