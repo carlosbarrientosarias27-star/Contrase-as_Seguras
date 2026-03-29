@@ -1,18 +1,10 @@
-import string
-import secrets
-import os
-from datetime import datetime
-
-
-
-
-
-
-
-
+from src.core.generator import generar_password
+from src.core.validator import evaluar_fortaleza
+from src.data.storage import guardar_en_archivo
+from src.utils.helpers import limpiar_pantalla
 
 def menu_principal():
-    """Implementa el bucle principal y menú interactivo[cite: 123, 129, 131]."""
+    """Implementa el bucle principal y menú interactivo."""
     while True:
         limpiar_pantalla()
         print("========================================")
@@ -30,7 +22,7 @@ def menu_principal():
         
         if opcion == "1":
             try:
-                # Configuración inicial y validación de rango [cite: 66, 174]
+                # Configuración inicial y validación de rango
                 lon = int(input("Longitud (8-128) [16]: ") or 16)
                 if not (8 <= lon <= 128): lon = 16
                 
@@ -49,7 +41,7 @@ def menu_principal():
                     pw = generar_password(lon, mayus, nums, syms, ambig)
                     fort = evaluar_fortaleza(pw)
                     resultados.append((pw, fort))
-                    print(f"{i}. {pw} -> [{fort}]") [cite: 97, 182]
+                    print(f"{i}. {pw} -> [{fort}]")
 
                 if input("\n¿Guardar en archivo? (s/n): ").lower() == 's':
                     guardar_en_archivo(resultados)
