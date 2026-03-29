@@ -1,4 +1,10 @@
 import pytest
+import os 
+import sys 
+
+# Añadir la raíz del proyecto al sys.path para encontrar el paquete 'src'
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import src.main as main
 
 # Excepción personalizada para salir del bucle while True en los tests
