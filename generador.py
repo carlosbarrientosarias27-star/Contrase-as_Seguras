@@ -9,9 +9,7 @@ from datetime import datetime
 
 
 
-def limpiar_pantalla():
-    """Limpia la consola para mejorar la legibilidad[cite: 129, 132]."""
-    os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def menu_principal():
     """Implementa el bucle principal y menú interactivo[cite: 123, 129, 131]."""
