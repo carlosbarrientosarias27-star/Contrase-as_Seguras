@@ -127,13 +127,16 @@ def test_generar_password_error_tipo_longitud():
 
 def test_generar_password_excluir_ambiguos_con_solo_numeros():
     """
-    Verifica que si solo se usan números y se excluyen ambiguos, no contenga '0' ni '1'.
+    Verifica que no contenga '0' ni '1' (ni 'O', 'I', 'l') al usar números y letras.
     """
     # Arrange
+    # Añadimos las minúsculas (menos la 'l') porque el generador las incluye siempre
+    letras_sin_l = string.ascii_lowercase.replace("l", "")
     solo_numeros_no_ambiguos = "23456789"
+    permitidos = letras_sin_l + solo_numeros_no_ambiguos
     
     # Act
     password = generar_password(longitud=50, usar_mayus=False, usar_nums=True, usar_syms=False, excluir_ambiguos=True)
     
     # Assert
-    assert all(c in solo_numeros_no_ambiguos for c in password)
+    assert all(c in permitidos for c in password)
