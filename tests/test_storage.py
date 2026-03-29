@@ -1,6 +1,14 @@
 import pytest
 import os
-from src.data.storage import guardar_en_archivo
+import builtins
+# Intentamos una importación relativa al sistema de archivos si la absoluta falla
+try:
+    from src.data.storage import guardar_en_archivo
+except ImportError:
+    # Fallback por si ejecutas desde dentro de src o similar
+    import sys
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from src.data.storage import guardar_en_archivo
 
 # --- Casos Normales (N) ---
 
