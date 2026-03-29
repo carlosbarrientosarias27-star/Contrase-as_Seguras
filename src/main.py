@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Adds the parent directory of 'src' to the path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from src.core.generator import generar_password
 from src.core.validator import evaluar_fortaleza
 from src.data.storage import guardar_en_archivo
