@@ -40,51 +40,37 @@ def test_limpiar_pantalla_ejecuta_comando_unix(monkeypatch):
 # --- Casos Límite (L) ---
 
 def test_limpiar_pantalla_nombre_os_vacio(monkeypatch):
-    """
-    Verifica el comportamiento cuando os.name es una cadena vacía (debe usar 'clear' por el else).
-    """
-    # Arrange
-    comando_ejecutado = None
+    """Verifica que se use 'clear' si os.name está vacío."""
+    captura = []
+    def mock_run(comando, **kwargs):
+        captura.append(comando[0])
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
     monkeypatch.setattr(os, "name", "")
-    monkeypatch.setattr(os, "system", lambda cmd: setattr(pytest, "cmd_tmp", cmd))
 
-    # Act
     limpiar_pantalla()
-
-    # Assert
-    assert pytest.cmd_tmp == "clear"
+    assert "clear" in captura
 
 # --- Casos de Error / Edge (E) ---
 
-def test_limpiar_pantalla_error_en_llamada_sistema(monkeypatch):
-    """
-    Verifica que una excepción en os.system se propague correctamente si el sistema falla.
-    """
-    # Arrange
-    def mock_system_error(comando):
-        raise OSError("Fallo del sistema")
+def test_limpiar_pantalla_no_rompe_si_falla_sistema(monkeypatch):
+    """Verifica que la función maneje errores de subprocess internamente."""
+    def mock_run_error(*args, **kwargs):
+        raise RuntimeError("Fallo crítico")
 
-    monkeypatch.setattr(os, "system", mock_system_error)
+    monkeypatch.setattr(subprocess, "run", mock_run_error)
 
-    # Act & Assert
-    with pytest.raises(OSError):
-        limpiar_pantalla()
-
-def test_limpiar_pantalla_os_name_no_string(monkeypatch):
-    """
-    Verifica el comportamiento si os.name no es un string (e.g., None), asegurando que no rompa la lógica.
-    """
-    # Arrange
-    comando_ejecutado = None
-    def mock_system(comando):
-        nonlocal comando_ejecutado
-        comando_ejecutado = comando
-
-    monkeypatch.setattr(os, "name", None)
-    monkeypatch.setattr(os, "system", mock_system)
-
-    # Act
+    # No debe lanzar excepción hacia afuera
     limpiar_pantalla()
 
-    # Assert
-    assert comando_ejecutado == "clear"
+def test_limpiar_pantalla_os_name_no_string(monkeypatch):
+    """Verifica que maneje casos donde os.name no es un string."""
+    captura = []
+    def mock_run(comando, **kwargs):
+        captura.append(comando[0])
+
+    monkeypatch.setattr(subprocess, "run", mock_run)
+    monkeypatch.setattr(os, "name", None)
+
+    limpiar_pantalla()
+    assert "clear" in captura
