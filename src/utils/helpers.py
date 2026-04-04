@@ -1,13 +1,19 @@
 import os
 import subprocess
 
-def limpiar_pantalla():
-    """Limpia la consola usando subprocess para evitar vulnerabilidades de shell."""
+def limpiar_pantalla(sistema=None):
+    """
+    Limpia la consola. 
+    Usa el parámetro 'sistema' para evitar mockear os.name en los tests.
+    """
+    # Si no se pasa un sistema, usamos el real del entorno
+    nombre_os = sistema if sistema is not None else os.name
+    
+    # Usamos listas para subprocess.run, lo cual es seguro según Bandit
+    comando = ['cls'] if nombre_os == 'nt' else ['clear']
+    
     try:
-        if os.name == 'nt':  # Windows
-            subprocess.run(['cls'], check=True)
-        else:  # macOS/Linux
-            subprocess.run(['clear'], check=True)
+        subprocess.run(comando, check=True)
     except Exception:
-        # Fallback if the command fails in certain environments
+        # Silenciamos errores si el comando no existe en el entorno
         pass

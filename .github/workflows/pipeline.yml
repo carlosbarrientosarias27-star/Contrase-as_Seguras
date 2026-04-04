@@ -40,6 +40,9 @@ jobs:
       run: |
         # Revisa vulnerabilidades comunes en Python
         bandit -r src/ -ll
+    
+    - name: Limpiar caché de Pytest
+      run: rm -rf .pytest_cache
 
     - name: Ejecutar pruebas y Cobertura con Pytest-Cov
       run: |

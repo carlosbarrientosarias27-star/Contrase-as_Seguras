@@ -1,46 +1,40 @@
 import pytest
-import os
+import subprocess
 from src.utils.helpers import limpiar_pantalla
+
 
 # --- Casos Normales (N) ---
 
 def test_limpiar_pantalla_ejecuta_comando_windows(monkeypatch):
-    """
-    Verifica que se llame al comando 'cls' cuando el sistema operativo es Windows (nt).
-    """
-    # Arrange
-    comando_ejecutado = None
-    def mock_system(comando):
-        nonlocal comando_ejecutado
-        comando_ejecutado = comando
+    """Verifica que se llame a 'cls' inyectando el sistema 'nt'."""
+    captura = []
+    
+    # Mockeamos subprocess.run en lugar de os.system
+    def mock_run(comando, **kwargs):
+        captura.append(comando[0])
 
-    monkeypatch.setattr(os, "name", "nt")
-    monkeypatch.setattr(os, "system", mock_system)
+    monkeypatch.setattr(subprocess, "run", mock_run)
 
-    # Act
-    limpiar_pantalla()
+    # Act: Inyectamos el nombre del sistema directamente
+    limpiar_pantalla(sistema="nt")
 
     # Assert
-    assert comando_ejecutado == "cls"
+    assert "cls" in captura
 
 def test_limpiar_pantalla_ejecuta_comando_unix(monkeypatch):
-    """
-    Verifica que se llame al comando 'clear' en sistemas basados en Unix (posix).
-    """
-    # Arrange
-    comando_ejecutado = None
-    def mock_system(comando):
-        nonlocal comando_ejecutado
-        comando_ejecutado = comando
+    """Verifica que se llame a 'clear' inyectando un sistema posix."""
+    captura = []
+    
+    def mock_run(comando, **kwargs):
+        captura.append(comando[0])
 
-    monkeypatch.setattr(os, "name", "posix")
-    monkeypatch.setattr(os, "system", mock_system)
+    monkeypatch.setattr(subprocess, "run", mock_run)
 
     # Act
-    limpiar_pantalla()
+    limpiar_pantalla(sistema="posix")
 
     # Assert
-    assert comando_ejecutado == "clear"
+    assert "clear" in captura
 
 # --- Casos Límite (L) ---
 
