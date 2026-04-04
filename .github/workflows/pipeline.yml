@@ -1,4 +1,4 @@
-name: CI de Contraseñas Seguras
+name: CI Avanzado - Contraseñas Seguras
 
 on:
   push:
@@ -10,7 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      # La matriz permite que el pipeline corra en paralelo para cada versión
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14-dev"]
 
@@ -22,15 +21,27 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        # Esto permite que si la 3.14 falla por ser experimental, el resto siga
         allow-prereleases: true
 
     - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
+        pip install pytest pytest-cov flake8 bandit
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pytest  # Asegura que pytest esté instalado para los tests
 
-    - name: Ejecutar pruebas con Pytest
+    - name: Linting con Flake8 (Calidad de Código)
       run: |
-        pytest
+        # Detener el build si hay errores de sintaxis o variables no definidas
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Advertencias de estilo (máximo 127 caracteres por línea)
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Análisis de Seguridad con Bandit
+      run: |
+        # Revisa vulnerabilidades comunes en Python
+        bandit -r src/ -ll
+
+    - name: Ejecutar pruebas y Cobertura con Pytest-Cov
+      run: |
+        # Ejecuta tests y genera reporte de qué porcentaje de código se probó
+        pytest --cov=src --cov-report=term-missing
